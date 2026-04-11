@@ -6,37 +6,39 @@ export default function UserTransactionPage() {
   const [data, setData] = useState<any[]>([]);
   const [token, setToken] = useState("");
 
-  const getStatusDisplay = (status: string) => {
-    switch (status) {
-      case "paid":
-      case "selesai":
-        return {
-          text: "Berhasil melakukan pembayaran",
-          subtext: "Pesanan sedang dikirim",
-          color: "text-green-600",
-        };
+  const downloadStruk = async (id: number) => {
+    try {
+      const res = await fetch(
+        `https://dimsumwrap3d.berkahost.biz.id/api/transactions/${id}/receipt`,
+        {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
 
-      case "cancelled":
-        return {
-          text: "Pesanan ini telah dibatalkan",
-          subtext: null,
-          color: "text-red-500",
-        };
+      console.log("STATUS:", res.status);
 
-      case "pending":
-        return {
-          text: "Belum melakukan pembayaran",
-          subtext:
-            "Batas pembayaran 24 jam. Jika lewat, pesanan akan otomatis dibatalkan.",
-          color: "text-black",
-        };
+      const text = await res.text();
+      console.log("RESPONSE:", text);
 
-      default:
-        return {
-          text: status,
-          subtext: null,
-          color: "text-black",
-        };
+      if (!res.ok) {
+        alert("Error: " + text);
+        return;
+      }
+
+      const blob = new Blob([text], { type: "application/pdf" });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `struk-${id}.pdf`;
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Fetch error");
     }
   };
 
@@ -213,12 +215,7 @@ export default function UserTransactionPage() {
 
                 {(t.status === "paid" || t.status === "selesai") && (
                   <button
-                    onClick={() =>
-                      window.open(
-                        `https://dimsumwrap3d.berkahost.biz.id/api/admin/transactions/${t.id_transaksi}/receipt`,
-                        "_blank"
-                      )
-                    }
+                    onClick={() => downloadStruk(t.id_transaksi)}
                     className="px-3 py-1 text-sm rounded-sm bg-white hover:bg-gray-100 text-black font-semibold"
                   >
                     Lihat Struk

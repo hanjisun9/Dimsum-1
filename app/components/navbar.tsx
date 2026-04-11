@@ -11,10 +11,20 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const token = localStorage.getItem("token");
+
+    if (!token) return;
+
+    fetch("https://dimsumwrap3d.berkahost.biz.id/api/auth/me", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        setUser(res.data);
+      })
+      .catch((err) => console.log(err));
   }, []);
 
   const handleProfileClick = () => {
@@ -26,11 +36,19 @@ export default function Navbar() {
     }
   };
 
+  const BASE_URL = "https://dimsumwrap3d.berkahost.biz.id";
+
   const getAvatar = () => {
     if (!user) return "/profile.jpg";
-    return user.role === "admin" ? "/admin.jpg" : "/profile.jpg";
-  };
 
+    const img = user.gambar_profile;
+
+    if (!img) return "/admin.jpg";
+
+    if (img.startsWith("http")) return img;
+
+    return BASE_URL + img;
+  };
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="w-full flex items-center px-6 py-4">
@@ -96,6 +114,9 @@ export default function Navbar() {
             >
               <img
                 src={getAvatar()}
+                onError={(e) => {
+                  e.currentTarget.src = "/profile.jpg";
+                }}
                 className="w-10 h-10 rounded-full object-cover hover:opacity-80"
                 alt="avatar"
               />

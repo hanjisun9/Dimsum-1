@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   images: {
     domains: ["dimsumwrap3d.berkahost.biz.id"],
   },

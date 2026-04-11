@@ -12,11 +12,14 @@ export default function ProfilePage() {
         password: "",
         no_hp: "",
         alamat: "",
+        gambar_profile: "",
     });
 
     const [loading, setLoading] = useState(false);
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
+    const [showPhotoModal, setShowPhotoModal] = useState(false);
+    const [photoUrl, setPhotoUrl] = useState("");
 
     const getToken = () => {
         if (typeof window !== "undefined") {
@@ -41,6 +44,7 @@ export default function ProfilePage() {
                 password: "",
                 no_hp: user?.no_hp || "",
                 alamat: user?.alamat || "",
+                gambar_profile: user?.gambar_profile || "",
             });
         } catch (err) {
             console.log(err);
@@ -87,7 +91,19 @@ export default function ProfilePage() {
         <div className="p-10 bg-[#FFF1F1] min-h-screen">
 
             <div className="flex items-center gap-6 mb-10">
-                <img src='/profile.jpg' className="w-28 h-28 rounded-full object-cover" />
+                <div className="relative w-28 h-28">
+                    <img
+                        src={form.gambar_profile || "/profile.jpg"}
+                        className="w-28 h-28 rounded-full object-cover"
+                    />
+
+                    <button
+                        onClick={() => setShowPhotoModal(true)}
+                        className="absolute bottom-0 right-0 bg-[#C3473F] text-white w-6 h-6 rounded-full flex items-center justify-center shadow"
+                    >
+                        <img src="/edit.png" alt="Change Profile" className="w-auto h-auto" />
+                    </button>
+                </div>
                 <div>
                     <h2 className="text-lg font-semibold text-black">{form.nama}</h2>
                     <p className="text-sm text-black">{form.email}</p>
@@ -164,6 +180,50 @@ export default function ProfilePage() {
                     {loading ? "Loading..." : "Simpan"}
                 </button>
             </form>
+            {showPhotoModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-2xl w-[350px]">
+
+                        <h2 className="text-lg font-semibold text-black mb-4">
+                            Ubah Foto Profil
+                        </h2>
+
+                        <img
+                            src={photoUrl || form.gambar_profile || "/profile.jpg"}
+                            className="w-20 h-20 rounded-full object-cover mx-auto mb-3"
+                        />
+
+                        <input
+                            type="text"
+                            placeholder="Masukkan URL gambar..."
+                            value={photoUrl}
+                            onChange={(e) => setPhotoUrl(e.target.value)}
+                            className="w-full p-3 rounded bg-[#F2DAD8] text-black mb-4 ring-[#e7d2d2] focus:ring-[#e7d2d2] focus:outline-none"
+                        />
+
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setShowPhotoModal(false)}
+                                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-white"
+                            >
+                                Batal
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setForm({ ...form, gambar_profile: photoUrl });
+                                    setShowPhotoModal(false);
+                                }}
+                                className="px-4 py-2 bg-[#C3473F] hover:bg-[#a63b34] text-white rounded"
+                            >
+                                Simpan
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            )}
         </div>
+
     );
 }

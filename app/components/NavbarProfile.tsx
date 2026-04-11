@@ -8,12 +8,20 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const role = localStorage.getItem("role");
-    const nama = localStorage.getItem("nama");
+    const token = localStorage.getItem("token");
 
-    if (role && nama) {
-      setUser({ role, nama });
-    }
+    if (!token) return;
+
+    fetch("https://dimsumwrap3d.berkahost.biz.id/api/auth/me", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        setUser(res.data);
+      })
+      .catch((err) => console.log(err));
   }, []);
 
   const handleClick = () => {
@@ -27,7 +35,11 @@ export default function Navbar() {
   };
 
   const getAvatar = () => {
-    return user?.role === "admin" ? "/admin.jpg" : "/profile.jpg";
+    if (!user) return "/profile.jpg";
+
+    return user.gambar_profile
+      ? user.gambar_profile
+      : "/admin.jpg";
   };
 
   return (
