@@ -1,12 +1,12 @@
-# Dimsum E-Commerce Website
+# Dimsum Packaing E-Commerce Website
 
-Website ini adalah platform **e-commerce untuk penjualan dan packaging dimsum**. Dibangun menggunakan Next.js dan Tailwind CSS, aplikasi ini memiliki fitur lengkap untuk user (pembeli) dan admin dalam mengelola produk dan transaksi.
+Website ini adalah platform **e-commerce untuk penjualan dan packaging dimsum**. Di build menggunakan Next.js dan Tailwind CSS, web ini memiliki fitur lengkap untuk user dan admin dalam manajement produk dan transaksi.
 
 ---
 
 ## Tentang Project
 
-Project ini dibuat untuk memudahkan proses jual beli dimsum secara online, mulai dari melihat produk, menambahkan ke keranjang, hingga proses checkout dan melihat riwayat transaksi.
+Project ini dibuat untuk memudahkan proses jual beli dimsum packaging secara online, mulai dari melihat produk, menambahkan ke keranjang, hingga proses checkout dan melihat riwayat transaksi.
 
 Selain itu, terdapat juga dashboard admin untuk mengelola seluruh data website.
 
@@ -28,7 +28,7 @@ Selain itu, terdapat juga dashboard admin untuk mengelola seluruh data website.
 
 ### Untuk Admin
 - Dashboard admin untuk monitoring website
-- Manajemen produk (CRUD: Create, Read, Update, Delete)
+- Manajemen produk (Add produk, delete produk, edit produk, list produk)
 - Detail produk
 - Notifikasi admin
 - Profil admin
