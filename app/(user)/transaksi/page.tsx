@@ -18,23 +18,22 @@ export default function UserTransactionPage() {
       );
 
       console.log("STATUS:", res.status);
-
-      const text = await res.text();
-      console.log("RESPONSE:", text);
-
       if (!res.ok) {
-        alert("Error: " + text);
+        const errorText = await res.text();
+        console.error("Error receipt:", errorText);
+        alert("Gagal mendownload struk: " + errorText);
         return;
       }
 
-      const blob = new Blob([text], { type: "application/pdf" });
+      const blob = await res.blob(); 
 
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `struk-${id}.pdf`;
+      document.body.appendChild(a);
       a.click();
-
+      a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
