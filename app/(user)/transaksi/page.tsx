@@ -2,77 +2,42 @@
 
 import { useEffect, useState } from "react";
 
+const API_BASE = "https://dimsumwrap3d.berkahost.biz.id/api";
+const HOST_BASE = "https://dimsumwrap3d.berkahost.biz.id";
+const TRAKTEER_URL = "https://trakteer.id/jujuu13/tip";
+
 export default function UserTransactionPage() {
   const [data, setData] = useState<any[]>([]);
-  const [token, setToken] = useState("");
-
-  const downloadStruk = async (id: number) => {
-    try {
-      const res = await fetch(
-        `https://dimsumwrap3d.berkahost.biz.id/api/transactions/${id}/receipt`,
-        {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        }
-      );
-
-      console.log("STATUS:", res.status);
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Error receipt:", errorText);
-        alert("Gagal mendownload struk: " + errorText);
-        return;
-      }
-
-      const blob = await res.blob(); 
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `struk-${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      alert("Fetch error");
-    }
-  };
+  const [token, setToken] = useState<string>("");
 
   useEffect(() => {
-    setToken(localStorage.getItem("token") || "");
+    const savedToken = localStorage.getItem("token") || "";
+    setToken(savedToken);
   }, []);
 
   const fetchData = async () => {
     if (!token) return;
 
     try {
-      const res = await fetch(
-        "https://dimsumwrap3d.berkahost.biz.id/api/transactions",
-        {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        }
-      );
+      const res = await fetch(`${API_BASE}/transactions`, {
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      if (!res.ok) return;
 
       const result = await res.json();
       const transactions = result.data || [];
 
       const withDetail = await Promise.all(
         transactions.map(async (trx: any) => {
-          const resDetail = await fetch(
-            `https://dimsumwrap3d.berkahost.biz.id/api/transactions/${trx.id_transaksi}`,
+          const detailRes = await fetch(
+            `${API_BASE}/transactions/${trx.id_transaksi}`,
             {
-              headers: {
-                Authorization: "Bearer " + token,
-              },
+              headers: { Authorization: "Bearer " + token },
             }
           );
 
-          const detail = await resDetail.json();
+          const detail = await detailRes.json();
 
           return {
             ...trx,
@@ -83,13 +48,64 @@ export default function UserTransactionPage() {
 
       setData(withDetail);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch transaksi error:", err);
     }
   };
 
   useEffect(() => {
     if (token) fetchData();
   }, [token]);
+
+  const downloadStruk = async (id: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/transactions/${id}/receipt`, {
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        alert("Gagal mendownload struk: " + errorText);
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `struk-${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat mengambil struk.");
+    }
+  };
+
+  const cancelTransaction = async (id: number) => {
+    if (!confirm("Yakin ingin membatalkan pesanan ini?")) return;
+
+    await fetch(`${API_BASE}/transactions/${id}/cancel`, {
+      method: "PUT",
+      headers: { Authorization: "Bearer " + token },
+    });
+
+    fetchData();
+  };
+
+  const deleteTransaction = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus riwayat transaksi ini?")) return;
+
+    await fetch(`${API_BASE}/transactions/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: "Bearer " + token },
+    });
+
+    fetchData();
+  };
 
   const getStatusIcon = (status: string) => {
     if (status === "paid" || status === "selesai") return "✔";
@@ -105,38 +121,41 @@ export default function UserTransactionPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch max-w-[900px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-[900px]">
         {data.map((t) => {
           const item = t.items?.[0];
 
           return (
             <div
               key={t.id_transaksi}
-              className="bg-[#F2DAD8] rounded-2xl p-4 relative flex flex-col h-auto"
+              className="bg-[#F2DAD8] rounded-2xl p-4 relative flex flex-col shadow"
             >
+              {/* STATUS ICON */}
               <div className="absolute top-3 left-3 w-6 h-6 flex items-center justify-center rounded-full bg-white text-green-600 text-sm font-bold">
                 {getStatusIcon(t.status)}
               </div>
 
+              {/* TANGGAL */}
               <p className="absolute top-3 right-4 text-sm text-black">
                 {new Date(t.tanggal).toLocaleDateString("id-ID")}
               </p>
 
+              {/* GAMBAR */}
               <div className="flex justify-center mt-6 mb-4">
                 <img
                   src={
                     item?.gambar_produk
-                      ? "https://dimsumwrap3d.berkahost.biz.id" +
-                      item.gambar_produk
+                      ? HOST_BASE + item.gambar_produk
                       : "/placeholder.png"
                   }
                   className="w-24 h-24 object-cover rounded-full bg-white"
                 />
               </div>
 
+              {/* INFO */}
               <div className="text-center space-y-1 flex-1">
-                <h2 className="font-bold text-[#B54141]">
-                  {item?.nama_produk || "Produk"}
+                <h2 className="font-bold text-[#B54141] text-lg">
+                  {item?.nama_produk}
                 </h2>
 
                 <p className="text-sm text-gray-700">
@@ -152,61 +171,60 @@ export default function UserTransactionPage() {
                 </p>
 
                 <div className="mt-2 text-center">
-                  {t.status === "paid" || t.status === "dikirim" ? (
+                  {t.status === "pending" && (
                     <>
-                      <p className="text-black font-semibold">
-                        <span className="text-green-500">Berhasil</span> melakukan pembayaran
-                      </p>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Pesanan sedang dikirim
-                      </p>
-                    </>
-                  ) : t.status === "cancelled" ? (
-                    <p className="text-black font-semibold">
-                      Pesanan ini telah{" "}
-                      <span className="text-red-500 font-bold">
-                        DIBATALKAN
-                      </span>
-                    </p>
-                  ) : t.status === "pending" ? (
-                    <>
-                      <p className="text-black font-semibold">
+                      <p className="font-semibold text-black">
                         Belum melakukan pembayaran
                       </p>
                       <p className="text-xs text-gray-600 mt-1">
-                        Batas pembayaran 24 jam. Jika lewat, pesanan akan otomatis dibatalkan.
+                        Bayar dalam 24 jam atau pesanan otomatis dibatalkan.
                       </p>
                     </>
-                  ) : t.status === "selesai" ? (
-                    <p className="text-blue-600 font-semibold">
+                  )}
+
+                  {t.status === "paid" && (
+                    <p className="font-semibold text-green-600">
+                      Pembayaran berhasil
+                    </p>
+                  )}
+
+                  {t.status === "dikirim" && (
+                    <p className="font-semibold text-blue-600">
+                      Pesanan sedang dikirim
+                    </p>
+                  )}
+
+                  {t.status === "selesai" && (
+                    <p className="font-semibold text-blue-600">
                       Pesanan selesai
                     </p>
-                  ) : null}
+                  )}
+
+                  {t.status === "cancelled" && (
+                    <p className="font-semibold text-red-600">
+                      Pesanan dibatalkan
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <div className="mt-4 flex justify-center gap-2">
+              {/* ACTION BUTTONS */}
+              <div className="mt-4 flex justify-center gap-2 flex-wrap">
                 {t.status === "pending" && (
                   <>
                     <button
-                      onClick={async () => {
-                        await fetch(
-                          `https://dimsumwrap3d.berkahost.biz.id/api/transactions/${t.id_transaksi}/cancel`,
-                          {
-                            method: "PUT",
-                            headers: {
-                              Authorization: "Bearer " + token,
-                            },
-                          }
-                        );
-                        fetchData();
-                      }}
+                      onClick={() => cancelTransaction(t.id_transaksi)}
                       className="px-3 py-1 text-sm bg-white rounded-sm text-[#C3473F] font-semibold"
                     >
                       Batalkan
                     </button>
 
-                    <button className="px-3 py-1 text-sm bg-[#C3473F] text-white rounded-sm font-semibold">
+                    <button
+                      onClick={() =>
+                        window.open(TRAKTEER_URL, "_blank")
+                      }
+                      className="px-3 py-1 text-sm bg-[#C3473F] text-white rounded-sm font-semibold"
+                    >
                       Bayar
                     </button>
                   </>
@@ -214,10 +232,24 @@ export default function UserTransactionPage() {
 
                 {(t.status === "paid" || t.status === "selesai") && (
                   <button
-                    onClick={() => downloadStruk(t.id_transaksi)}
-                    className="px-3 py-1 text-sm rounded-sm bg-white hover:bg-gray-100 text-black font-semibold"
+                    onClick={() =>
+                      downloadStruk(t.id_transaksi)
+                    }
+                    className="px-3 py-1 text-sm bg-white rounded-sm text-black font-semibold"
                   >
                     Lihat Struk
+                  </button>
+                )}
+
+                {(t.status === "selesai" ||
+                  t.status === "cancelled") && (
+                  <button
+                    onClick={() =>
+                      deleteTransaction(t.id_transaksi)
+                    }
+                    className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded-sm font-semibold"
+                  >
+                    Hapus
                   </button>
                 )}
               </div>

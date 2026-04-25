@@ -70,7 +70,7 @@ export default function TransactionsPage() {
   const updateStatus = async (id: number, status: string) => {
     setUpdatingId(id);
     try {
-      await fetch(
+      const res = await fetch(
         `https://dimsumwrap3d.berkahost.biz.id/api/admin/transactions/${id}/status`,
         {
           method: "PUT",
@@ -81,6 +81,14 @@ export default function TransactionsPage() {
           body: JSON.stringify({ status }),
         }
       );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.message || "Gagal update status");
+        return;
+      }
+
       fetchData();
     } catch (err) {
       console.error(err);
@@ -90,27 +98,33 @@ export default function TransactionsPage() {
   };
 
   const deleteData = async (id: number) => {
-  if (!confirm("Yakin hapus transaksi?")) return;
+    if (!confirm("Yakin hapus transaksi?")) return;
 
-  setDeletingId(id);
-  try {
-    await fetch(
-      `https://dimsumwrap3d.berkahost.biz.id/api/admin/transactions/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: "Bearer " + token,
-        },
+    setDeletingId(id);
+    try {
+      const res = await fetch(
+        `https://dimsumwrap3d.berkahost.biz.id/api/admin/transactions/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.message || "Gagal menghapus transaksi");
+        return;
       }
-    );
-
-    fetchData();
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setDeletingId(null);
-  }
-};
+      setData((prev) => prev.filter((t) => t.id_transaksi !== id));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -161,7 +175,6 @@ export default function TransactionsPage() {
               />
 
               <div className="flex flex-col">
-
                 <div className="flex items-center gap-2 mb-1">
                   {t.status === "cancelled" ? (
                     <div className="w-5 h-5 bg-red-500 text-white flex items-center justify-center rounded-full text-xs">
@@ -177,13 +190,10 @@ export default function TransactionsPage() {
                     {t.nama} | Email : {t.email || "-"}
                   </p>
                 </div>
+
                 <h2 className="text-2xl font-bold text-[#a63a33]">
                   {item?.nama_produk}
                 </h2>
-
-                <p className="text-sm text-gray-700">
-                  Produk: {item?.kategori || "Hexagon"}
-                </p>
 
                 <p className="text-sm text-gray-700">
                   Layanan: {t.layanan || "Design dan Print Packaging"}
@@ -197,22 +207,23 @@ export default function TransactionsPage() {
                   <div className="mt-3 flex items-center gap-3">
                     <select
                       defaultValue={t.status}
+                      disabled={updatingId === t.id_transaksi}
                       onChange={(e) =>
                         updateStatus(t.id_transaksi, e.target.value)
                       }
                       className="bg-white px-4 py-2 rounded-xl shadow outline-none text-black"
                     >
-                      <option value="paid" className="text-black">Paid</option>
-                      <option value="dikirim" className="text-black">Dikirim</option>
-                      <option value="selesai" className="text-black">Selesai</option>
-                      <option value="cancelled" className="text-black">Cancel</option>
+                      <option value="paid">Paid</option>
+                      <option value="dikirim">Dikirim</option>
+                      <option value="selesai">Selesai</option>
+                      <option value="cancelled">Cancel</option>
                     </select>
 
-                    <button
-                      className="bg-[#b9372f] text-white px-6 py-2 rounded-xl shadow"
-                    >
-                      Simpan
-                    </button>
+                    {updatingId === t.id_transaksi && (
+                      <span className="text-sm text-gray-500">
+                        Menyimpan...
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -223,33 +234,25 @@ export default function TransactionsPage() {
                 {new Date(t.tanggal).toLocaleDateString("id-ID")}
               </p>
 
-              {t.status === "paid" || t.status === "dikirim" ? (
-                <>
-                  <p className="text-black font-semibold">
-                    <span className="text-green-500">Berhasil</span> melakukan pembayaran
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Pesanan sedang dikirim
-                  </p>
-                </>
-              ) : t.status === "cancelled" ? (
-                <p className="text-black font-semibold">
-                  Pesanan ini telah{" "}
-                  <span className="text-red-500 font-bold">
-                    DIBATALKAN
-                  </span>
+              {t.status === "cancelled" ? (
+                <p className="text-red-500 font-semibold">
+                  Dibatalkan
                 </p>
               ) : t.status === "selesai" ? (
                 <p className="text-blue-600 font-semibold">
-                  Pesanan selesai
+                  Selesai
                 </p>
-              ) : null}
+              ) : (
+                <p className="text-green-600 font-semibold">
+                  Diproses
+                </p>
+              )}
 
-              {t.status === "cancelled" && (
+              {(t.status === "cancelled" || t.status === "selesai") && (
                 <button
                   onClick={() => deleteData(t.id_transaksi)}
                   disabled={deletingId === t.id_transaksi}
-                  className="mt-4 bg-[#b9372f] text-white px-6 py-2 rounded-xl shadow disabled:opacity-50"
+                  className="mt-4 bg-[#b9372f] hover:bg-[#a02d26] text-white px-6 py-2 rounded-xl shadow disabled:opacity-50"
                 >
                   {deletingId === t.id_transaksi ? "Menghapus..." : "Hapus"}
                 </button>

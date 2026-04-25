@@ -218,7 +218,6 @@ export default function Contact() {
                             >
                                 <option>E-Wallet</option>
                                 <option>Debit Bank</option>
-                                <option>COD</option>
                             </select>
                         </div>
 
