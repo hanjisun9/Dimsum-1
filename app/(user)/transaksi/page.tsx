@@ -105,7 +105,7 @@ export default function UserTransactionPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch max-w-[900px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch max-w-225">
         {data.map((t) => {
           const item = t.items?.[0];
 
