@@ -30,20 +30,24 @@ export default function DashboardPage() {
       .then((res) => setTransactions(res.data));
   }, []);
 
-  const pending = transactions.filter((t: any) => t.status === "pending").length;
+  const safeTransactions = transactions || [];
+  const safeProducts = products || [];
+
+  const pending = safeTransactions.filter(
+    (t: any) => t.status === "pending"
+  ).length;
 
   const chartData = [
-    { name: "Produk", total: products.length },
-    { name: "Transaksi", total: transactions.length },
+    { name: "Produk", total: safeProducts.length },
+    { name: "Transaksi", total: safeTransactions.length },
     { name: "Pending", total: pending },
   ];
-
   return (
     <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold mb-4 text-[#741209]">Dashboard</h1>
       <div className="grid grid-cols-3 gap-4">
         <Card title="Total Produk" value={products.length} />
-        <Card title="Total Transaksi" value={transactions.length} />
+        <Card title="Total Transaksi" value={(transactions || []).length} />
         <Card title="Pending" value={pending} />
       </div>
 
