@@ -118,6 +118,7 @@ export default function AdminTransactionPage() {
         return;
       }
       setData((prev) => prev.filter((x) => x.id_transaksi !== id));
+
     } catch (err) {
       console.error(err);
       alert("Fetch error");
@@ -140,6 +141,8 @@ export default function AdminTransactionPage() {
         <h1 className="text-2xl font-bold text-[#741209]">
           Transaction Controller
         </h1>
+
+        text
 
         <button
           onClick={fetchData}

@@ -98,7 +98,7 @@ export default function ProfileAdminPage() {
       setLoading(false);
     }
   };
-  
+
   const getAvatar = () => {
     if (previewUrl) return previewUrl;
 

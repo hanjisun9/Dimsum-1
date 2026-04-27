@@ -21,7 +21,6 @@ export default function ProfilePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const getToken = () => localStorage.getItem("token") || "";
-
   const getProfile = async () => {
     try {
       const res = await fetch(`${BASE_URL}/api/auth/me`, {
@@ -117,7 +116,7 @@ export default function ProfilePage() {
         BASE_URL +
         form.gambar_profile +
         "?t=" +
-        new Date().getTime() 
+        new Date().getTime()
       );
     }
 

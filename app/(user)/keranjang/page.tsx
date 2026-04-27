@@ -57,38 +57,37 @@ export default function CartPage() {
   }, []);
 
   const updateQty = async (id: number, type: "plus" | "minus") => {
-    const token = getToken();
-    console.log("TOKEN:", token);
+  const token = getToken();
+  console.log("TOKEN:", token);
 
-    const item = data.find((i) => i.id_keranjang === id);
-    if (!item) return;
+  const item = data.find((i) => i.id_keranjang === id);
+  if (!item) return;
 
-    const newQty = type === "plus" ? item.jumlah + 1 : item.jumlah - 1;
-    if (newQty < 1) return;
+  const newQty = type === "plus" ? item.jumlah + 1 : item.jumlah - 1;
+  if (newQty < 1) return;
 
-    try {
-      const res = await fetch(`${API_BASE}/cart/item/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({ jumlah: newQty }),
-      });
+  try {
+    const res = await fetch(`${API_BASE}/cart/item/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({ jumlah: newQty }),
+    });
 
-      console.log("STATUS UPDATE:", res.status);
+    console.log("STATUS UPDATE:", res.status);
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.log("ERROR RESPONSE:", text);
-      }
-
-      fetchCart();
-    } catch (err) {
-      console.error("FETCH ERROR:", err);
+    if (!res.ok) {
+      const text = await res.text();
+      console.log("ERROR RESPONSE:", text);
     }
-  };
 
+    fetchCart();
+  } catch (err) {
+    console.error("FETCH ERROR:", err);
+  }
+};
   const deleteItem = async (id: number) => {
     const token = getToken();
 

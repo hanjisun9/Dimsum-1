@@ -9,6 +9,7 @@ const TRAKTEER_URL = "https://trakteer.id/jujuuu13/tip?quantity=1";
 export default function UserTransactionPage() {
   const [data, setData] = useState<any[]>([]);
   const [token, setToken] = useState<string>("");
+
   useEffect(() => {
     const savedToken = localStorage.getItem("token") || "";
     setToken(savedToken);
